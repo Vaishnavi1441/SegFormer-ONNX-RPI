@@ -1,0 +1,36 @@
+# ==============================================================================
+# SIMULATION & HARDWARE MODULAR CONFIGURATION
+# Set any module to true/false to switch between simulation and physical hardware
+# ==============================================================================
+
+modules:
+  # Flight Controller Communication
+  simulate_mavlink_sitl: true     # true = software loop / simulated physics; false = physical Pixhawk UART (/dev/ttyAMA0)
+  
+  # Sensor & Camera Hardware
+  simulate_rgb_camera: true       # true = synthetic frames or uploaded custom video; false = physical CSI/USB3 camera (device 0)
+  simulate_multispectral: true    # true = synthetic NIR/Red array or uploaded video; false = physical Mapir/MicaSense (device 2)
+  simulate_thermal_camera: true   # true = radiometric heatmap synthesis; false = physical FLIR Lepton/Boson (device 1)
+  
+  # Environmental & Physics Simulation
+  simulate_battery_drain: true    # true = real-time 4S discharge model; false = Pixhawk PM02 power monitor telemetry
+  simulate_gps_dynamics: true     # true = realistic GPS drift & 3D fix; false = Pixhawk M8N/M9N GPS UART
+  simulate_obstacle_lidar: true   # true = 360-degree virtual distance sensors; false = physical TFmini/RPLiDAR
+
+battery_specifications:
+  chemistry: "4S LiPo"
+  capacity_mah: 5200.0
+  discharge_rating_c: 40.0
+  cell_count: 4
+  voltage_full_v: 16.8            # 4.2V / cell
+  voltage_nominal_v: 14.8         # 3.7V / cell
+  voltage_low_warning_v: 14.0     # 3.5V / cell (Trigger GCS Warning)
+  voltage_critical_rtl_v: 13.6    # 3.4V / cell (Trigger Auto-RTL)
+  current_hover_amps: 22.0        # Average hover current for 10-inch quad with ~2.5kg AUW
+  current_cruise_amps: 18.0
+
+custom_feed:
+  # When set, the simulation will loop this video through the perception pipeline
+  active_video_path: ""           # Dynamically set when operator uploads video in GCS
+  active_image_path: ""
+  loop_video: true

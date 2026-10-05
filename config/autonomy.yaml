@@ -1,0 +1,19 @@
+# Autonomous Flight & Mission Parameters
+flight_limits:
+  default_survey_altitude_m: 35.0
+  min_altitude_m: 5.0
+  max_altitude_m: 100.0
+  default_cruise_speed_mps: 8.0 # meters per second (~28.8 km/h)
+  max_speed_mps: 15.0
+  tracking_orbit_radius_m: 15.0
+  tracking_altitude_m: 25.0
+
+survey_defaults:
+  grid_spacing_m: 18.0
+  forward_overlap_percent: 75.0
+  side_overlap_percent: 65.0
+  auto_resume_on_loss: true
+
+geotagging:
+  enable_realtime_geotag: true
+  camera_mount_pitch_deg: -90.0 # Nadir (pointing straight down)

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AERO-TACTIC // Autonomous UAV Ground Control</title>
+    <link rel="stylesheet" href="/static/style.css" />
+    <!-- Google Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;800&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+<body>
+    <div class="gcs-container">
+        <!-- Top Telemetry Ribbon -->
+        <header class="telemetry-bar">
+            <div class="brand">
+                <i class="fa-solid fa-satellite-dish pulse-icon"></i>
+                <span class="brand-title">AERO-SCAN <span class="brand-sub">UAV GCS</span></span>
+            </div>
+        
+        </header>
+
+        <!-- Main Body -->
+        <div class="main-workspace">
+            <!-- Left: Interactive Map -->
+
+
+            <!-- Right: Triple Vision & Real-time Terrain Scanner HUD -->
+            <div class="vision-panel">
+                <div class="panel-header">
+                    <span><i class="fa-solid fa-eye"></i> MULTI-SENSOR PERCEPTION HUD</span>
+                    <div class="feed-actions">
+                        <select id="preset-feed-select" class="preset-select" title="Quick Select Drone Video/Image">
+                            <option value="">📂 SELECT VIDEO FEED...</option>
+                        </select>
+                        <button id="btn-dual-view" class="view-toggle-btn" title="Toggle Dual Side-by-Side (Raw + Terrain)">
+                            <i class="fa-solid fa-table-columns"></i> DUAL VIEW
+                        </button>
+                        <label for="video-upload-input" class="upload-btn" title="Upload Scenery Video/Image">
+                            <i class="fa-solid fa-cloud-arrow-up"></i> UPLOAD
+                        </label>
+                        <input type="file" id="video-upload-input" accept="video/*,image/*" style="display: none;" />
+                    </div>
+                </div>
+
+                <!-- Primary Mode Selector (Terrain vs Objects vs Combined) -->
+                <div class="mode-ribbon">
+                    <button class="mode-ribbon-btn active" data-mode="TERRAIN" data-stream="terrain_seg">
+                        <i class="fa-solid fa-mountain"></i> 1. TERRAIN SEGMENTATION
+                    </button>
+                    <button class="mode-ribbon-btn" data-mode="OBJECTS" data-stream="rgb">
+                        <i class="fa-solid fa-crosshairs"></i> 2. OBJECT DETECTION
+                    </button>
+                    <button class="mode-ribbon-btn" data-mode="COMBINED" data-stream="combined">
+                        <i class="fa-solid fa-layer-group"></i> 3. COMBINED DUAL
+                    </button>
+                    <button class="mode-ribbon-btn" data-mode="THERMAL" data-stream="thermal">
+                        <i class="fa-solid fa-fire"></i> 4. THERMAL
+                    </button>
+                    <button class="mode-ribbon-btn" data-mode="NDVI" data-stream="ndvi">
+                        <i class="fa-solid fa-seedling"></i> 5. NDVI SPECTRAL
+                    </button>
+                </div>
+
+                <!-- Video Viewport (Single or Dual Side-by-Side) -->
+                <div class="video-container" id="video-container">
+                    <!-- Left / Main Stream -->
+                    <div class="viewport-box" id="viewport-main">
+                        <img id="active-video-feed" src="/stream/terrain_seg" alt="Live UAV Video Feed" />
+                        <div class="video-overlay-tag" id="feed-tag">TERRAIN SEGMENTATION (ADAPTIVE WATER & LAND)</div>
+                        <div class="query-overlay-tag" id="query-tag">ALL TERRAIN ACTIVE</div>
+                    </div>
+
+                    <!-- Right / Raw Video Stream (Active in Dual View Mode) -->
+                    <div class="viewport-box dual-secondary" id="viewport-raw" style="display: none;">
+                        <img id="raw-video-feed" src="/stream/raw" alt="Original Drone Footage" />
+                        <div class="video-overlay-tag raw-tag">ORIGINAL RAW FOOTAGE</div>
+                    </div>
+                </div>
+
+                <!-- Opacity Blend Control Bar (in Terrain Mode) -->
+                <div class="opacity-control-bar" id="opacity-bar">
+                    <span class="opacity-label"><i class="fa-solid fa-sliders"></i> MASK BLEND OPACITY:</span>
+                    <span class="label-raw">0% (Raw)</span>
+                    <input type="range" id="opacity-slider" min="0" max="100" value="50" class="slider-control" />
+                    <span class="label-mask">100% (Solid Mask)</span>
+                    <span class="badge" id="val-opacity">50%</span>
+                </div>
+
+                <!-- Live Semantic Terrain Legend & Stats (Prominently displayed in Terrain Mode) -->
+                <div class="terrain-legend-card" id="terrain-legend-panel">
+                    <div class="card-title">
+                        <span><i class="fa-solid fa-tree"></i> LIVE TERRAIN SEMANTIC CLASSIFICATION</span>
+                        <span class="badge" id="terrain-scan-progress">SCAN: 0% (0 m²)</span>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" id="scan-bar-fill" style="width: 0%;"></div>
+                    </div>
+
+                    <!-- Semantic Class Breakdown Chips -->
+                    <div class="semantic-chips-grid">
+                        <div class="sem-chip forest">
+                            <span class="swatch swatch-forest"></span>
+                            <span class="sem-title">Vegetation / Trees:</span>
+                            <strong id="pct-forest">0.0%</strong>
+                        </div>
+                        <div class="sem-chip grassland">
+                            <span class="swatch swatch-grassland"></span>
+                            <span class="sem-title">Buildings / Urban:</span>
+                            <strong id="pct-grassland">0.0%</strong>
+                        </div>
+                        <div class="sem-chip water">
+                            <span class="swatch swatch-water"></span>
+                            <span class="sem-title">Ocean / Water:</span>
+                            <strong id="pct-water">0.0%</strong>
+                        </div>
+                        <div class="sem-chip sand">
+                            <span class="swatch swatch-sand"></span>
+                            <span class="sem-title">Bare Ground / Soil:</span>
+                            <strong id="pct-sand">0.0%</strong>
+                        </div>
+                        <div class="sem-chip rock">
+                            <span class="swatch swatch-rock"></span>
+                            <span class="sem-title">Other Terrain:</span>
+                            <strong id="pct-rock">0.0%</strong>
+                        </div>
+                        <div class="sem-chip roads">
+                            <span class="swatch swatch-roads"></span>
+                            <span class="sem-title">Roads / Pavement:</span>
+                            <strong id="pct-roads">0.0%</strong>
+                        </div>
+                        <div class="sem-chip clouds">
+                            <span class="swatch swatch-clouds"></span>
+                            <span class="sem-title">Sky / Clouds:</span>
+                            <strong id="pct-clouds">0.0%</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Georeferenced Detections Table (Displayed in Object Mode / Dual Mode) -->
+                <div class="detections-card" id="detections-panel" style="display: none;">
+                    <div class="card-title">
+                        <span><i class="fa-solid fa-bullseye"></i> GEOREFERENCED DETECTIONS & ATTRIBUTES</span>
+                        <span class="badge" id="det-count">0 DETECTED</span>
+                    </div>
+                    <div class="detections-list" id="detections-list">
+                        <div class="empty-hint">Scanning for localized objects (people, vehicles, boats, hotspots)...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Command Deck: Speech, Attributes & Quick Actions -->
+        <footer class="command-deck">
+            <!-- Attribute & Terrain Filter Chips -->
+            <div class="attribute-chips">
+                <span class="chip-label"><i class="fa-solid fa-filter"></i> COMMAND FILTERS:</span>
+                <button class="chip-btn" data-cmd="terrain mode"><i class="fa-solid fa-mountain"></i> Terrain Mode</button>
+                <button class="chip-btn" data-cmd="object detection mode"><i class="fa-solid fa-crosshairs"></i> Object Mode</button>
+                <button class="chip-btn" data-cmd="search people with red tshirt"><i class="fa-solid fa-person"></i> Red T-Shirt Persons</button>
+                <button class="chip-btn" data-cmd="find white vehicles"><i class="fa-solid fa-truck"></i> White Vehicles</button>
+                <button class="chip-btn" data-cmd="search heat hotspots above 42 degrees"><i class="fa-solid fa-fire"></i> Hotspots >42°C</button>
+                <button class="chip-btn reset" data-cmd="search all objects"><i class="fa-solid fa-rotate-left"></i> Reset Filter</button>
+            </div>
+
+            <div class="command-input-row">
+                <!-- Voice Input Widget -->
+                <div class="voice-section">
+                    <button id="btn-voice" class="voice-btn" title="Hold/Click to Speak Commands">
+                        <i class="fa-solid fa-microphone"></i>
+                    </button>
+                    <div class="voice-status-box">
+                        <div class="voice-status" id="voice-status">VOICE COMMAND STANDBY (Click Mic or Type)</div>
+                        <div class="voice-feedback" id="voice-feedback">Ready (e.g. "Terrain mode", "Dual view", "Search red shirt", "Start grid survey")</div>
+                    </div>
+                </div>
+
+                <!-- Text Command Bar -->
+                <div class="text-cmd-section">
+                    <div class="input-wrap">
+                        <i class="fa-solid fa-terminal cmd-icon"></i>
+                        <input type="text" id="cmd-input" placeholder="Type command (e.g. 'terrain mode', 'start grid survey at 35m', 'search people with red tshirt')..." />
+                        <button id="btn-send-cmd" class="btn-action primary"><i class="fa-solid fa-paper-plane"></i> SEND</button>
+                    </div>
+                </div>
+            </div>
+
+           
+        </footer>
+    </div>
+
+    <!-- Leaflet JS & App Code -->
+    <script src="/static/app.js"></script>
+</body>
+</html>

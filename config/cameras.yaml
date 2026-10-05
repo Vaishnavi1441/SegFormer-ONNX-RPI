@@ -1,0 +1,34 @@
+# Camera Configuration for Multi-Sensor UAV Array
+rgb_camera:
+  enabled: true
+  device_index: 0
+  width: 1280
+  height: 720
+  fps: 30
+  fov_horizontal_deg: 75.0
+  focal_length_mm: 4.74
+  sensor_width_mm: 6.287
+
+multispectral_camera:
+  enabled: true
+  device_index: 2
+  width: 1280
+  height: 720
+  fps: 15
+  nir_channel_index: 0   # Near-Infrared Channel index in array
+  red_channel_index: 2   # Red Channel index in array
+  green_channel_index: 1 # Green Channel index in array
+
+thermal_camera:
+  enabled: true
+  device_index: 1
+  width: 320
+  height: 240
+  fps: 15
+  min_temp_celsius: 10.0
+  max_temp_celsius: 60.0
+  hotspot_threshold_celsius: 42.0
+  colormap: "ironbow"   # options: ironbow, jet, white_hot, black_hot
+
+simulation:
+  use_mock_cameras: true # Set to false on real Pi 5 hardware with physical cameras

@@ -1,0 +1,19 @@
+# MAVLink Connection Configuration for ArduPilot / Pixhawk
+connection:
+  # On Raspberry Pi 5 hardware (UART): "/dev/ttyAMA0" or "/dev/ttyS0"
+  # On SITL Simulation / USB: "udp:127.0.0.1:14550" or "tcp:127.0.0.1:5760"
+  address: "udp:127.0.0.1:14550"
+  baudrate: 921600
+  source_system: 1
+  source_component: 191 # Companion Computer component ID (MAV_COMP_ID_ONBOARD_COMPUTER)
+
+rates:
+  attitude_hz: 20
+  position_hz: 10
+  battery_hz: 2
+  status_hz: 5
+
+failsafes:
+  heartbeat_timeout_sec: 3.0
+  low_battery_voltage: 21.6 # 6S LiPo low voltage (3.6V/cell)
+  critical_battery_voltage: 21.0

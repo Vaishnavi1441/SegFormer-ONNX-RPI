@@ -1,0 +1,11 @@
+# UAV Autonomous Scanner Dependencies
+pymavlink>=2.4.40
+opencv-python-headless>=4.8.0
+numpy>=1.24.0
+pyyaml>=6.0.1
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+websockets>=12.0
+pydantic>=2.5.0
+requests>=2.31.0
+onnxruntime>=1.17.0
